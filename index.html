@@ -3,979 +3,1066 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Boleto Fraud Monitor · EBANX Fraud Prevention</title>
+<title>Fraud Intelligence Copilot · EBANX</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#0b0d14;
-  --bg1:#111420;
-  --bg2:#161925;
-  --bg3:#1c2030;
-  --border:rgba(255,255,255,.07);
-  --border2:rgba(255,255,255,.12);
-  --txt:#e4e6f0;
-  --txt2:#8b8fa8;
-  --txt3:#555870;
-  --accent:#4f8ef7;
-  --accent-dim:rgba(79,142,247,.1);
-  --green:#22c55e;
-  --green-dim:rgba(34,197,94,.1);
-  --red:#ef4444;
-  --red-dim:rgba(239,68,68,.1);
-  --amber:#f59e0b;
-  --amber-dim:rgba(245,158,11,.1);
-  --purple:#a78bfa;
-  --purple-dim:rgba(167,139,250,.1);
+  --bg:#0b0d14;--bg1:#111420;--bg2:#161925;--bg3:#1c2030;--bg4:#222640;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+  --txt:#e4e6f0;--txt2:#8b8fa8;--txt3:#555870;
+  --accent:#4f8ef7;--accent-dim:rgba(79,142,247,.1);--accent-border:rgba(79,142,247,.2);
+  --green:#22c55e;--green-dim:rgba(34,197,94,.1);--green-border:rgba(34,197,94,.2);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.25);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,.1);--amber-border:rgba(245,158,11,.2);
+  --purple:#a78bfa;--purple-dim:rgba(167,139,250,.1);
   --orange:#f97316;
-  --sb:220px;
-  --hdr:56px;
-  --r:8px;
-  --r2:12px;
+  --sb:228px;--hdr:56px;--r:8px;--r2:12px;--r3:16px;
   font-family:'Inter',system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5}
-a{color:inherit;text-decoration:none}
-button{cursor:pointer;font-family:inherit}
+html,body{background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5;min-height:100%;overflow-x:hidden}
 
 /* ── Sidebar ── */
-.sb{
-  position:fixed;top:0;left:0;bottom:0;width:var(--sb);
-  background:var(--bg1);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;z-index:200;
-  transition:transform .25s ease;
-}
-.sb-logo{
-  display:flex;align-items:center;gap:10px;
-  padding:18px 16px;border-bottom:1px solid var(--border);
-}
-.sb-logo-icon{
-  width:32px;height:32px;border-radius:8px;
-  background:var(--accent);display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:700;color:#fff;flex-shrink:0;
-}
-.sb-logo-text{font-size:13px;font-weight:600;color:var(--txt);line-height:1.2}
+.sb{position:fixed;top:0;left:0;bottom:0;width:var(--sb);background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transition:transform .25s ease}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:16px 14px 14px;border-bottom:1px solid var(--border)}
+.sb-mark{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-logo-text{font-size:12px;font-weight:700;color:var(--txt);line-height:1.25;letter-spacing:-.2px}
 .sb-logo-sub{font-size:10px;color:var(--txt3);margin-top:1px}
-.sb-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
-.sb-item{
-  display:flex;align-items:center;gap:9px;
-  padding:8px 10px;border-radius:var(--r);
-  font-size:12.5px;color:var(--txt2);
-  transition:background .15s,color .15s;
-}
+.sb-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:1px;overflow-y:auto}
+.sb-sect{font-size:9.5px;font-weight:700;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;padding:10px 10px 4px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);font-size:12.5px;color:var(--txt2);transition:background .15s,color .15s;cursor:pointer}
 .sb-item:hover{background:rgba(255,255,255,.05);color:var(--txt)}
 .sb-item.active{background:var(--accent-dim);color:var(--accent);font-weight:500}
-.sb-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
-.sb-item.active svg{opacity:1}
-.sb-sep{height:1px;background:var(--border);margin:6px 8px}
-.sb-section{font-size:10px;font-weight:600;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;padding:8px 10px 4px}
-.sb-footer{padding:12px 14px;border-top:1px solid var(--border);font-size:10.5px;color:var(--txt3);line-height:1.6}
-.sb-footer strong{color:var(--txt2)}
+.sb-item svg{width:14px;height:14px;flex-shrink:0;stroke-width:1.8}
+.sb-chip{margin-left:auto;font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:20px}
+.ch-red{background:var(--red-dim);color:var(--red)}
+.ch-green{background:var(--green-dim);color:var(--green)}
+.ch-amber{background:var(--amber-dim);color:var(--amber)}
+.ch-acc{background:var(--accent-dim);color:var(--accent)}
+.sb-sep{height:1px;background:var(--border);margin:6px 10px}
+.sb-footer{padding:12px 14px;border-top:1px solid var(--border);font-size:10.5px;color:var(--txt3);line-height:1.7}
+.sb-footer b{color:var(--txt2);font-weight:500}
 
 /* ── Header ── */
-.hdr{
-  position:fixed;top:0;left:var(--sb);right:0;height:var(--hdr);
-  background:var(--bg1);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 24px;z-index:100;
-}
-.hdr-left{display:flex;align-items:center;gap:14px}
-.hdr-title{font-size:14px;font-weight:600;color:var(--txt)}
-.hdr-sub{font-size:11px;color:var(--txt3);margin-top:1px}
-.hdr-right{display:flex;align-items:center;gap:10px}
-.hdr-live{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green)}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.hdr-time{font-size:11px;color:var(--txt3);padding:4px 10px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)}
-.btn-refresh{
-  display:flex;align-items:center;gap:6px;
-  background:var(--accent-dim);border:1px solid rgba(79,142,247,.2);
-  color:var(--accent);border-radius:var(--r);padding:6px 12px;
-  font-size:12px;font-weight:500;transition:background .15s;
-}
-.btn-refresh:hover{background:rgba(79,142,247,.2)}
-.menu-btn{display:none;background:none;border:none;color:var(--txt2);font-size:20px;line-height:1;padding:4px}
+.hdr{position:fixed;top:0;left:var(--sb);right:0;height:var(--hdr);background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;z-index:100}
+.hdr-l{display:flex;align-items:center;gap:14px}
+.menu-btn{display:none;background:none;border:none;color:var(--txt2);font-size:20px;cursor:pointer;padding:2px}
+.hdr-title{font-size:13.5px;font-weight:700;color:var(--txt);letter-spacing:-.2px}
+.hdr-period{font-size:10.5px;color:var(--txt3);margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.hdr-live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:glow 2s infinite}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.35}}
+.hdr-clock{font-size:11px;color:var(--txt3);padding:4px 10px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border);font-variant-numeric:tabular-nums}
+.btn-ref{display:flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:var(--r);padding:6px 13px;font-size:12px;font-weight:500;cursor:pointer;transition:background .15s}
+.btn-ref:hover{background:rgba(79,142,247,.18)}
 
 /* ── Main ── */
 .main{margin-left:var(--sb);padding-top:var(--hdr)}
-.content{padding:20px 24px;display:flex;flex-direction:column;gap:20px;max-width:1400px}
+.page{padding:20px 22px;display:flex;flex-direction:column;gap:20px;max-width:1500px}
 
-/* ── Alert strip ── */
-.alert-strip{
-  background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.04));
-  border:1px solid rgba(239,68,68,.25);border-left:3px solid var(--red);
-  border-radius:var(--r2);padding:12px 16px;
-  display:flex;align-items:flex-start;gap:12px;
+/* ━━━━ DAILY BRIEFING ━━━━ */
+.briefing{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);
+  overflow:hidden;
 }
-.alert-strip-icon{color:var(--red);font-size:18px;flex-shrink:0;margin-top:1px}
-.alert-strip-body{font-size:12px;color:rgba(239,68,68,.9);line-height:1.6}
-.alert-strip-body strong{color:var(--red)}
+.briefing-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,rgba(79,142,247,.06) 0%,transparent 60%);
+}
+.briefing-hdr-l{display:flex;align-items:center;gap:12px}
+.briefing-ico{width:36px;height:36px;border-radius:var(--r2);background:var(--accent-dim);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0}
+.briefing-ico svg{width:17px;height:17px;stroke-width:1.8}
+.briefing-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.briefing-title{font-size:14px;font-weight:700;color:var(--txt)}
+.briefing-badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border)}
+.briefing-body{padding:16px 20px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start}
+.briefing-text{font-size:13px;color:var(--txt2);line-height:1.75;border-left:2px solid var(--accent-border);padding-left:14px}
+.briefing-text b{color:var(--txt);font-weight:500}
+.briefing-text .hi-red{color:var(--red);font-weight:600}
+.briefing-text .hi-green{color:var(--green);font-weight:600}
+.briefing-text .hi-amber{color:var(--amber);font-weight:600}
+.briefing-meta{display:flex;flex-direction:column;gap:8px;min-width:200px}
+.bm-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);font-size:11px}
+.bm-lbl{color:var(--txt3)}
+.bm-val{font-weight:600;color:var(--txt)}
+.briefing-actions{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;background:var(--bg3)}
+.ba-btn{font-size:11.5px;padding:6px 14px;border-radius:var(--r);background:var(--bg2);border:1px solid var(--border);color:var(--txt2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.ba-btn:hover{background:var(--bg3);color:var(--txt);border-color:var(--border2)}
+.ba-btn svg{width:12px;height:12px;stroke-width:2}
+.ba-btn.primary{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent)}
+.ba-btn.primary:hover{background:rgba(79,142,247,.18)}
 
-/* ── KPIs ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.kpi-card{
+/* ━━━━ HERO PE D-1 ━━━━ */
+.hero{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);
+  padding:22px 26px;display:grid;grid-template-columns:auto 1px 1fr;gap:26px;align-items:center;
+}
+.hero-main{}
+.hero-eyebrow{font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:7px}
+.hero-eyebrow span{padding:2px 8px;border-radius:4px;background:var(--accent-dim);color:var(--accent);font-size:10px}
+.hero-num{font-size:52px;font-weight:700;color:var(--txt);letter-spacing:-2px;line-height:1;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.hero-brl{font-size:18px;font-weight:500;color:var(--txt2);margin-bottom:10px}
+.hero-badges{display:flex;gap:8px;flex-wrap:wrap}
+.hbadge{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px}
+.hb-down{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.hb-up{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.hb-n{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border)}
+.hero-div{background:var(--border2);align-self:stretch;width:1px}
+.hero-stats{display:flex;flex-direction:column;gap:8px}
+.hs{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r)}
+.hs-lbl{font-size:11px;color:var(--txt3)}
+.hs-val{font-size:13px;font-weight:600;color:var(--txt)}
+.hs-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px}
+.tag-red{background:var(--red-dim);color:var(--red)}
+.tag-amber{background:var(--amber-dim);color:var(--amber)}
+.tag-green{background:var(--green-dim);color:var(--green)}
+
+/* ━━━━ PRIORIZAÇÃO ━━━━ */
+.priority-grid{display:flex;flex-direction:column;gap:8px}
+.prio-item{
+  display:flex;align-items:center;gap:14px;
   background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
-  padding:16px;display:flex;flex-direction:column;gap:8px;
-  transition:border-color .2s;
+  padding:12px 16px;cursor:pointer;transition:border-color .2s,background .15s;
 }
-.kpi-card:hover{border-color:var(--border2)}
-.kpi-top{display:flex;align-items:center;justify-content:space-between}
-.kpi-label{font-size:11px;color:var(--txt3);font-weight:500;letter-spacing:.02em}
-.kpi-icon{width:30px;height:30px;border-radius:var(--r);display:flex;align-items:center;justify-content:center}
-.kpi-val{font-size:24px;font-weight:600;color:var(--txt);letter-spacing:-.5px;line-height:1}
-.kpi-meta{font-size:11px;display:flex;align-items:center;gap:6px}
-.kpi-delta{font-weight:500;padding:2px 6px;border-radius:4px;font-size:10px}
-.kpi-delta.up{background:var(--red-dim);color:var(--red)}
-.kpi-delta.down{background:var(--green-dim);color:var(--green)}
-.kpi-delta.neutral{background:rgba(255,255,255,.05);color:var(--txt3)}
+.prio-item:hover{border-color:var(--border2);background:var(--bg3)}
+.prio-item.crit{border-left:3px solid var(--red)}
+.prio-item.high{border-left:3px solid var(--orange)}
+.prio-item.med{border-left:3px solid var(--amber)}
+.prio-rank{font-size:11px;font-weight:700;color:var(--txt3);min-width:18px;text-align:center}
+.prio-level{width:30px;height:30px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.pl-crit{background:var(--red-dim)}
+.pl-high{background:rgba(249,115,22,.1)}
+.pl-med{background:var(--amber-dim)}
+.prio-body{flex:1;min-width:0}
+.prio-name{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:2px}
+.prio-reason{font-size:11px;color:var(--txt3);line-height:1.4}
+.prio-metrics{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.pm{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px}
+.pm-pe{background:rgba(245,158,11,.12);color:var(--amber)}
+.pm-delta-up{background:var(--red-dim);color:var(--red)}
+.pm-delta-down{background:var(--green-dim);color:var(--green)}
+.pm-conv{background:var(--accent-dim);color:var(--accent)}
+.pm-hd{background:var(--purple-dim);color:var(--purple)}
 
-/* ── Grid layouts ── */
+/* ━━━━ Vencimentos ━━━━ */
+.due-row{display:flex;gap:10px;flex-wrap:wrap}
+.due-card{flex:1;min-width:130px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:13px 16px;display:flex;flex-direction:column;gap:4px;transition:border-color .2s}
+.due-card.urgent{border-color:var(--red-border);background:rgba(239,68,68,.04)}
+.due-card.upcoming{border-color:var(--amber-border);background:rgba(245,158,11,.04)}
+.due-date-lbl{font-size:10.5px;color:var(--txt3);font-weight:500}
+.due-count{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.due-card.urgent .due-count{color:var(--red)}
+.due-card.upcoming .due-count{color:var(--amber)}
+.due-sub{font-size:11px;color:var(--txt3);line-height:1.4;margin-top:2px}
+
+/* ━━━━ Alert strip ━━━━ */
+.alert-strip{background:rgba(239,68,68,.06);border:1px solid var(--red-border);border-left:3px solid var(--red);border-radius:var(--r2);padding:11px 16px;display:flex;align-items:flex-start;gap:11px}
+.alert-strip svg{flex-shrink:0;margin-top:1px;color:var(--red)}
+.alert-body{font-size:11.5px;color:rgba(239,68,68,.85);line-height:1.65}
+.alert-body b{color:var(--red)}
+
+/* ━━━━ Merchant PE cards ━━━━ */
+.mpc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.mpc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:13px;display:flex;flex-direction:column;gap:5px;transition:border-color .2s,background .15s;cursor:default}
+.mpc:hover{border-color:var(--border2);background:var(--bg3)}
+.mpc-name{font-size:10.5px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mpc-pe{font-size:26px;font-weight:700;color:var(--txt);font-variant-numeric:tabular-nums;line-height:1}
+.mpc-brl{font-size:10.5px;color:var(--txt3)}
+.mpc-delta{font-size:10.5px;font-weight:600;display:flex;align-items:center;gap:3px;margin-top:2px}
+.md-up{color:var(--red)}.md-down{color:var(--green)}.md-neu{color:var(--txt3)}
+.mpc-badge{margin-top:3px}
+
+/* ━━━━ KPIs ━━━━ */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;transition:border-color .2s}
+.kpi:hover{border-color:var(--border2)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.kpi-lbl{font-size:11px;color:var(--txt3);font-weight:500}
+.kpi-ico{width:28px;height:28px;border-radius:var(--r);display:flex;align-items:center;justify-content:center}
+.kpi-ico svg{width:13px;height:13px;stroke-width:2}
+.kpi-val{font-size:22px;font-weight:700;color:var(--txt);line-height:1;font-variant-numeric:tabular-nums}
+.kpi-sub{font-size:11px;color:var(--txt3);margin-top:4px}
+.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;margin-top:5px}
+.kd-up{background:var(--red-dim);color:var(--red)}
+.kd-down{background:var(--green-dim);color:var(--green)}
+.kd-n{background:rgba(255,255,255,.05);color:var(--txt3)}
+
+/* ━━━━ Section ━━━━ */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.sec-title{font-size:12px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:7px}
+.sec-title svg{width:13px;height:13px;color:var(--txt3);stroke-width:2}
+.sec-meta{font-size:11px;color:var(--txt3)}
+
+/* ━━━━ Charts ━━━━ */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .grid-3-2{display:grid;grid-template-columns:3fr 2fr;gap:16px}
 .grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-
-/* ── Chart cards ── */
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:16px}
-.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .card-title{font-size:12px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:7px}
-.card-title svg{width:14px;height:14px;color:var(--txt3)}
-.card-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
-.chart-wrap{position:relative;width:100%}
-.ch-200{height:200px}
-.ch-220{height:220px}
-.ch-240{height:240px}
-.ch-180{height:180px}
-
-/* ── Legend ── */
-.leg{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
-.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--txt2)}
+.card-title svg{width:13px;height:13px;color:var(--txt3);stroke-width:2}
+.cw{position:relative;width:100%}
+.ch-180{height:180px}.ch-200{height:200px}.ch-220{height:220px}.ch-240{height:240px}
+.leg{display:flex;flex-wrap:wrap;gap:10px}
+.leg-i{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--txt2)}
 .leg-sq{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
-/* ── Tables ── */
+/* ━━━━ Table ━━━━ */
 .tbl-wrap{overflow-x:auto;border-radius:var(--r2);border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:12px}
-thead th{
-  background:var(--bg3);color:var(--txt3);
-  font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
-  padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);
-  white-space:nowrap;user-select:none;cursor:pointer;
-}
+thead th{background:var(--bg3);color:var(--txt3);font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer}
 thead th:hover{color:var(--txt)}
-tbody td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--txt);white-space:nowrap}
+tbody td{padding:8px 13px;border-bottom:1px solid var(--border);color:var(--txt);white-space:nowrap}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:rgba(255,255,255,.02)}
 
-/* ── Badges ── */
+/* ━━━━ Badges ━━━━ */
 .badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
-.badge-pe{background:rgba(245,158,11,.12);color:var(--amber)}
-.badge-co{background:var(--green-dim);color:var(--green)}
-.badge-hd{background:var(--purple-dim);color:var(--purple)}
-.badge-ca{background:rgba(255,255,255,.05);color:var(--txt3)}
-.badge-crit{background:var(--red-dim);color:var(--red)}
-.badge-high{background:rgba(249,115,22,.1);color:var(--orange)}
-.badge-med{background:var(--accent-dim);color:var(--accent)}
+.b-pe{background:rgba(245,158,11,.12);color:var(--amber)}
+.b-co{background:var(--green-dim);color:var(--green)}
+.b-hd{background:var(--purple-dim);color:var(--purple)}
+.b-ca{background:rgba(255,255,255,.06);color:var(--txt3)}
+.b-crit{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.b-high{background:rgba(249,115,22,.1);color:var(--orange)}
+.b-med{background:var(--accent-dim);color:var(--accent)}
 
-/* ── Bars inline ── */
-.conv-cell{display:flex;align-items:center;gap:6px}
-.conv-bar{width:48px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;flex-shrink:0}
-.conv-fill{height:100%;border-radius:2px;transition:width .3s}
+.conv-c{display:flex;align-items:center;gap:6px}
+.conv-track{width:44px;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.conv-fill{height:100%;border-radius:2px}
 
-/* ── BP-DR list ── */
-.bpdr-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
-.bpdr-item:last-child{border-bottom:none}
-.bpdr-code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:10px;color:var(--accent);min-width:80px;flex-shrink:0}
-.bpdr-desc{font-size:10px;color:var(--txt3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bpdr-track{width:70px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;flex-shrink:0}
+/* ━━━━ Side panels ━━━━ */
+.bpdr-i{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.bpdr-i:last-child{border-bottom:none}
+.bpdr-code{font-family:monospace;font-size:10px;color:var(--accent);min-width:78px}
+.bpdr-desc{font-size:10px;color:var(--txt3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bpdr-track{width:60px;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
 .bpdr-fill{height:100%;background:var(--accent);border-radius:2px}
-.bpdr-ct{font-size:11px;font-weight:600;color:var(--txt2);min-width:38px;text-align:right}
-
-/* ── CPF critical card ── */
-.cpf-critical{
-  background:linear-gradient(135deg,rgba(239,68,68,.06),rgba(239,68,68,.02));
-  border:1px solid rgba(239,68,68,.2);border-left:3px solid var(--red);
-  border-radius:var(--r2);padding:12px 16px;margin-bottom:14px;
-}
-.cpf-critical-title{font-size:11px;font-weight:600;color:var(--red);margin-bottom:5px;display:flex;align-items:center;gap:6px}
-.cpf-critical-body{font-size:11px;color:rgba(239,68,68,.75);line-height:1.6}
-
-/* ── Score bars ── */
-.score-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
-.score-item:last-child{border-bottom:none}
-.score-name{font-size:11px;color:var(--txt2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.score-track{width:80px;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.bpdr-ct{font-size:11px;font-weight:600;color:var(--txt2);min-width:34px;text-align:right}
+.score-i{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.score-i:last-child{border-bottom:none}
+.score-name{font-size:11px;color:var(--txt2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score-track{width:70px;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
 .score-fill{height:100%;border-radius:2px}
-.score-val{font-size:12px;font-weight:600;min-width:28px;text-align:right}
-
-/* ── Insights ── */
-.insights-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.insight{
-  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
-  padding:12px;font-size:11px;color:var(--txt2);line-height:1.55;
-  display:flex;gap:9px;align-items:flex-start;
-}
-.insight-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px}
-
-/* ── Anomaly warning ── */
-.anomaly{
-  background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);
-  border-left:3px solid var(--amber);border-radius:var(--r2);
-  padding:12px 16px;font-size:12px;color:rgba(245,158,11,.85);line-height:1.6;
-  display:flex;gap:10px;align-items:flex-start;
-}
-
-/* ── Sen bars ── */
-.sen-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.sen-lbl{font-size:11px;color:var(--txt2);min-width:74px}
-.sen-track{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-.sen-bar{height:100%;border-radius:3px}
+.score-val{font-size:12px;font-weight:700;min-width:26px;text-align:right}
+.sen-i{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sen-lbl{font-size:11px;color:var(--txt2);min-width:72px}
+.sen-track{flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.sen-bar{height:100%;border-radius:2px}
 .sen-num{font-size:11px;font-weight:500;color:var(--txt);min-width:42px;text-align:right}
 
-/* ── Agent chat ── */
+/* ━━━━ CPF ━━━━ */
+.cpf-crit-box{background:rgba(239,68,68,.05);border:1px solid var(--red-border);border-left:3px solid var(--red);border-radius:var(--r2);padding:11px 15px;margin-bottom:13px}
+.cpf-crit-title{font-size:11px;font-weight:600;color:var(--red);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.cpf-crit-body{font-size:11px;color:rgba(239,68,68,.75);line-height:1.6}
+
+/* ━━━━ Insights ━━━━ */
+.ins-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ins-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-size:11px;color:var(--txt2);line-height:1.55;display:flex;gap:8px}
+.ins-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px}
+
+/* ━━━━ Anomaly ━━━━ */
+.anomaly{background:rgba(245,158,11,.05);border:1px solid var(--amber-border);border-left:3px solid var(--amber);border-radius:var(--r2);padding:11px 15px;font-size:12px;color:rgba(245,158,11,.85);line-height:1.65;display:flex;gap:10px}
+
+/* ━━━━ AGENT CHAT ━━━━ */
 .agent-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
-.agent-head{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg3);
-}
-.agent-head-info{flex:1}
-.agent-head-name{font-size:12px;font-weight:600;color:var(--txt)}
-.agent-head-sub{font-size:10px;color:var(--txt3);margin-top:1px}
-.agent-badge{font-size:10px;font-weight:500;padding:3px 9px;border-radius:20px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(79,142,247,.2)}
-.agent-icon{width:32px;height:32px;border-radius:var(--r);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0}
-.agent-msgs{padding:14px 16px;min-height:160px;max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
-.msg-agent{align-self:flex-start;max-width:88%;background:var(--bg3);border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:10px 13px;font-size:12px;color:var(--txt);line-height:1.55}
-.msg-user{align-self:flex-end;max-width:88%;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.2);border-radius:10px 0 10px 10px;padding:10px 13px;font-size:12px;color:rgba(79,142,247,.95);line-height:1.55}
-.msg-loading{align-self:flex-start;background:var(--bg3);border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:10px 13px;font-size:12px;color:var(--txt3);display:flex;align-items:center;gap:5px}
+.agent-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.agent-ico{width:32px;height:32px;border-radius:var(--r);background:var(--accent-dim);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0}
+.agent-ico svg{width:15px;height:15px;stroke-width:1.8}
+.agent-info{flex:1}
+.agent-name{font-size:12.5px;font-weight:700;color:var(--txt)}
+.agent-sub{font-size:10px;color:var(--txt3);margin-top:1px}
+.agent-badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border)}
+.agent-msgs{padding:14px 16px;min-height:140px;max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.msg-a{align-self:flex-start;max-width:90%;background:var(--bg3);border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:10px 13px;font-size:12px;color:var(--txt);line-height:1.6}
+.msg-u{align-self:flex-end;max-width:90%;background:rgba(79,142,247,.1);border:1px solid var(--accent-border);border-radius:10px 0 10px 10px;padding:10px 13px;font-size:12px;color:rgba(79,142,247,.95);line-height:1.6}
+.msg-load{align-self:flex-start;background:var(--bg3);border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:10px 13px;font-size:12px;color:var(--txt3);display:flex;align-items:center;gap:5px}
 @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-.dot-anim span{animation:blink 1.2s infinite;display:inline-block}
-.dot-anim span:nth-child(2){animation-delay:.2s}
-.dot-anim span:nth-child(3){animation-delay:.4s}
+.dots span{animation:blink 1.2s infinite;display:inline-block}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
 .agent-quick{display:flex;flex-wrap:wrap;gap:6px;padding:8px 16px 10px;background:var(--bg3);border-top:1px solid var(--border)}
-.qbtn{
-  font-size:11px;padding:5px 11px;border-radius:var(--r);
-  background:var(--bg2);border:1px solid var(--border);
-  color:var(--txt2);transition:background .15s,color .15s,border-color .15s;
-}
+.qbtn{font-size:11px;padding:5px 11px;border-radius:var(--r);background:var(--bg2);border:1px solid var(--border);color:var(--txt2);cursor:pointer;transition:all .15s}
 .qbtn:hover{background:var(--bg3);color:var(--txt);border-color:var(--border2)}
-.agent-input{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--bg3)}
-.agent-input input{
-  flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--txt);
-  border-radius:var(--r);padding:8px 12px;font-size:12px;font-family:inherit;outline:none;
-  transition:border-color .15s;
-}
-.agent-input input:focus{border-color:rgba(79,142,247,.4)}
-.agent-input input::placeholder{color:var(--txt3)}
-.agent-send{
-  background:var(--accent);border:none;color:#fff;
-  border-radius:var(--r);padding:8px 16px;font-size:12px;font-weight:500;
-  display:flex;align-items:center;gap:6px;transition:opacity .15s;flex-shrink:0;
-}
-.agent-send:hover{opacity:.85}
+.agent-inp{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--bg3)}
+.agent-inp input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--txt);border-radius:var(--r);padding:8px 12px;font-size:12px;font-family:inherit;outline:none;transition:border-color .15s}
+.agent-inp input:focus{border-color:var(--accent-border)}
+.agent-inp input::placeholder{color:var(--txt3)}
+.btn-send{background:var(--accent);border:none;color:#fff;border-radius:var(--r);padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:opacity .15s;flex-shrink:0}
+.btn-send:hover{opacity:.85}
+.btn-send svg{width:12px;height:12px;stroke-width:2}
 
-/* ── Footer ── */
-.page-footer{font-size:10px;color:var(--txt3);text-align:right;padding:4px 0 8px}
-
-/* ── Overlay (mobile) ── */
+/* ━━━━ Overlay / footer ━━━━ */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199}
 .overlay.open{display:block}
+.page-footer{font-size:10px;color:var(--txt3);text-align:right;padding-bottom:8px;line-height:1.6}
 
-/* ── Responsive ── */
-@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.insights-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:960px){.grid-3-2,.grid-2-1{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}
-@media(max-width:768px){
-  .sb{transform:translateX(-100%)}
-  .sb.open{transform:translateX(0)}
-  .hdr{left:0}
-  .main{margin-left:0}
-  .menu-btn{display:block}
-  .kpi-grid{grid-template-columns:repeat(2,1fr)}
-  .content{padding:14px}
-  .insights-grid{grid-template-columns:1fr}
+/* ━━━━ Responsive ━━━━ */
+@media(max-width:1200px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .ins-grid{grid-template-columns:repeat(2,1fr)}
+  .briefing-body{grid-template-columns:1fr}
 }
-@media(max-width:480px){.kpi-grid{grid-template-columns:1fr}}
+@media(max-width:960px){
+  .grid-3-2,.grid-2-1,.grid-2{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr;grid-template-rows:auto}
+  .hero-div{display:none}
+}
+@media(max-width:768px){
+  .sb{transform:translateX(-100%)}.sb.open{transform:translateX(0)}
+  .hdr{left:0}.main{margin-left:0}.menu-btn{display:block}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .page{padding:14px}.hero-num{font-size:38px}
+  .ins-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .kpi-row{grid-template-columns:1fr}
+  .mpc-grid{grid-template-columns:repeat(2,1fr)}
+  .briefing-meta{min-width:unset}
+}
 </style>
 </head>
 <body>
 
-<!-- Overlay mobile -->
-<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<div class="overlay" id="overlay" onclick="toggleSb()"></div>
 
-<!-- Sidebar -->
-<aside class="sb" id="sidebar">
+<!-- ━━━━ SIDEBAR ━━━━ -->
+<aside class="sb" id="sb">
   <div class="sb-logo">
-    <div class="sb-logo-icon">FP</div>
+    <div class="sb-mark">FI</div>
     <div>
-      <div class="sb-logo-text">Fraud Prevention</div>
-      <div class="sb-logo-sub">EBANX · Boleto Monitor</div>
+      <div class="sb-logo-text">Fraud Intelligence</div>
+      <div class="sb-logo-sub">Copilot · EBANX</div>
     </div>
   </div>
-
   <nav class="sb-nav">
-    <div class="sb-section">Monitoramento</div>
+    <div class="sb-sect">Monitoramento</div>
     <a class="sb-item active" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Dashboard
     </a>
     <a class="sb-item" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-      Merchants
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Daily Briefing
+      <span class="sb-chip ch-acc">novo</span>
     </a>
     <a class="sb-item" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      Merchants
+      <span class="sb-chip ch-red">2 críticos</span>
+    </a>
+    <a class="sb-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
       Tendências
     </a>
-
     <div class="sb-sep"></div>
-    <div class="sb-section">Risco</div>
+    <div class="sb-sect">Risco</div>
     <a class="sb-item" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
       Alertas
+      <span class="sb-chip ch-red">3</span>
     </a>
     <a class="sb-item" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      CPFs
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      CPFs críticos
+      <span class="sb-chip ch-amber">6</span>
     </a>
     <a class="sb-item" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       Riscos
     </a>
-
     <div class="sb-sep"></div>
-    <div class="sb-section">Agente IA</div>
+    <div class="sb-sect">APMs</div>
     <a class="sb-item" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      Análise Claude
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+      Boleto
+      <span class="sb-chip ch-green">ativo</span>
+    </a>
+    <a class="sb-item" href="#" style="opacity:.4;pointer-events:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+      Pix <span style="font-size:9px;color:var(--txt3);margin-left:auto">em breve</span>
+    </a>
+    <a class="sb-item" href="#" style="opacity:.4;pointer-events:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Cartão <span style="font-size:9px;color:var(--txt3);margin-left:auto">em breve</span>
+    </a>
+    <div class="sb-sep"></div>
+    <a class="sb-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Copilot Chat
     </a>
   </nav>
-
   <div class="sb-footer">
-    <div>Período: <strong>22/06 – 05/07/2026</strong></div>
-    <div>País: <strong>Brasil</strong> · 10 merchants</div>
-    <div id="sb-last-update" style="margin-top:4px;color:var(--txt3)">Última atualização: agora</div>
+    <div>Período: <b>22/06 – 05/07/2026</b></div>
+    <div>País: <b>Brasil</b> · 10 merchants</div>
+    <div id="sb-time-lbl" style="margin-top:2px">Atualizado: <b id="sb-time">--:--</b></div>
   </div>
 </aside>
 
-<!-- Header -->
+<!-- ━━━━ HEADER ━━━━ -->
 <header class="hdr">
-  <div class="hdr-left">
-    <button class="menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+  <div class="hdr-l">
+    <button class="menu-btn" onclick="toggleSb()" aria-label="Menu">☰</button>
     <div>
-      <div class="hdr-title">Boleto Fraud Monitor</div>
-      <div class="hdr-sub" id="hdr-sub">Carregando...</div>
+      <div class="hdr-title">Fraud Intelligence Copilot</div>
+      <div class="hdr-period">Boleto · Brasil · 22/06 – 05/07/2026 · 10 merchants</div>
     </div>
   </div>
-  <div class="hdr-right">
-    <span class="hdr-live"><span class="live-dot"></span> ao vivo</span>
-    <span class="hdr-time" id="hdr-clock">--:--</span>
-    <button class="btn-refresh" onclick="refreshPage()">
+  <div class="hdr-r">
+    <span class="hdr-live"><span class="live-dot"></span>ao vivo</span>
+    <span class="hdr-clock" id="hdr-clock">--:--:--</span>
+    <button class="btn-ref" onclick="refreshUI()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
       Atualizar
     </button>
   </div>
 </header>
 
-<!-- Main -->
+<!-- ━━━━ MAIN ━━━━ -->
 <main class="main">
-<div class="content">
+<div class="page">
 
-  <!-- Alert strip -->
+  <!-- ▌1. DAILY BRIEFING ▌ -->
+  <div class="briefing">
+    <div class="briefing-hdr">
+      <div class="briefing-hdr-l">
+        <div class="briefing-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div>
+          <div class="briefing-label">AI Daily Briefing</div>
+          <div class="briefing-title">Resumo da monitoria · 05/07/2026</div>
+        </div>
+      </div>
+      <span class="briefing-badge">gerado pela IA · Claude Sonnet</span>
+    </div>
+    <div class="briefing-body">
+      <div class="briefing-text">
+        Ontem foram registrados <b>806 boletos em PE</b>, queda de <span class="hi-green">0,9% em relação a D-2</span> e <span class="hi-green">8,2% abaixo de D-3</span> — tendência de redução no curto prazo. O volume financeiro em aberto é de <b>R$ 104.965</b>, concentrado majoritariamente no <b>Alipay (67,5% dos PE)</b>.<br><br>
+        Ponto de atenção imediato: <span class="hi-red">771 boletos vencem em 08/07 (amanhã)</span>, representando R$ 100.413 em risco de expiração. Outros 35 vencem hoje em 07/07.<br><br>
+        Destaque positivo: <span class="hi-green">CamelPay reduziu PE em 52,6%</span> (de 57 para 27) — queda expressiva que merece monitoramento para confirmar se é tendência real ou artefato de data. Destaque negativo: <span class="hi-red">Wish aumentou PE em +267%</span> (de 6 para 22) e <span class="hi-red">TradeInn +133%</span> (de 6 para 14) — ambos requerem investigação.<br><br>
+        Alerta persistente: <b>CPF 863.457.610-87</b> mantém padrão de fraude de identidade em escala no Alipay. Taxa de conversão geral do período em <span class="hi-amber">34,5%</span> — abaixo do esperado para boleto registrado.
+      </div>
+      <div class="briefing-meta">
+        <div class="bm-item"><span class="bm-lbl">PE D-1</span><span class="bm-val">806</span></div>
+        <div class="bm-item"><span class="bm-lbl">Vencem 08/07</span><span class="bm-val" style="color:var(--red)">771</span></div>
+        <div class="bm-item"><span class="bm-lbl">Vencem 07/07</span><span class="bm-val" style="color:var(--amber)">35</span></div>
+        <div class="bm-item"><span class="bm-lbl">Merchants ↑ PE</span><span class="bm-val" style="color:var(--red)">3</span></div>
+        <div class="bm-item"><span class="bm-lbl">Merchants ↓ PE</span><span class="bm-val" style="color:var(--green)">6</span></div>
+        <div class="bm-item"><span class="bm-lbl">Alertas ativos</span><span class="bm-val" style="color:var(--red)">CRITICAL + 2 HIGH</span></div>
+      </div>
+    </div>
+    <div class="briefing-actions">
+      <button class="ba-btn primary" onclick="sq('Resuma a monitoria de boletos de hoje em 5 linhas, destacando o que precisa de atenção imediata.')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Aprofundar com IA ↗
+      </button>
+      <button class="ba-btn" onclick="sq('O que mudou desde ontem nos boletos PE? Quais merchants tiveram as maiores variações positivas e negativas?')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        O que mudou? ↗
+      </button>
+      <button class="ba-btn" onclick="sq('Quais merchants devo investigar hoje com prioridade? Justifique com base nos dados de PE, conversão e histórico de risco.')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+        Prioridades do dia ↗
+      </button>
+      <button class="ba-btn" onclick="sq('Existe alguma tendência preocupante nos últimos 7 dias de dados de boleto? Analise PE, HD, CO e conversão por dia.')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg>
+        Tendências ↗
+      </button>
+      <button class="ba-btn" onclick="sq('Resuma a operação de boletos em cinco linhas para apresentar ao time.')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+        Resumo para o time ↗
+      </button>
+    </div>
+  </div>
+
+  <!-- ▌2. HERO PE D-1 ▌ -->
+  <div class="hero">
+    <div class="hero-main">
+      <div class="hero-eyebrow">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Boletos PE · dia anterior (05/07/2026)
+        <span>D-1</span>
+      </div>
+      <div class="hero-num">806</div>
+      <div class="hero-brl">R$ 104.965 em aberto</div>
+      <div class="hero-badges">
+        <div class="hbadge hb-down">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+          −0,9% vs D-2
+        </div>
+        <div class="hbadge hb-down">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+          −8,2% vs D-3
+        </div>
+        <div class="hbadge hb-n">23,2% clientes novos</div>
+      </div>
+    </div>
+    <div class="hero-div"></div>
+    <div class="hero-stats">
+      <div class="hs">
+        <span class="hs-lbl">PE total do período</span>
+        <div style="display:flex;align-items:center;gap:8px"><span class="hs-val">7.563</span><span class="hs-tag tag-red">35,9% do total</span></div>
+      </div>
+      <div class="hs">
+        <span class="hs-lbl">Vence 07/07 (2 dias)</span>
+        <div style="display:flex;align-items:center;gap:8px"><span class="hs-val" style="color:var(--amber)">35</span><span class="hs-tag tag-amber">urgente</span></div>
+      </div>
+      <div class="hs">
+        <span class="hs-lbl">Vence 08/07 (3 dias)</span>
+        <div style="display:flex;align-items:center;gap:8px"><span class="hs-val" style="color:var(--red)">771</span><span class="hs-tag tag-red">R$ 100.413</span></div>
+      </div>
+      <div class="hs">
+        <span class="hs-lbl">Conversão geral</span>
+        <div style="display:flex;align-items:center;gap:8px"><span class="hs-val">34,5%</span><span class="hs-tag tag-red">abaixo alvo</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ▌3. VENCIMENTOS ▌ -->
+  <div>
+    <div class="sec-hdr">
+      <div class="sec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Vencimento dos PE de ontem
+      </div>
+      <span class="sec-meta">806 boletos · 2 datas identificadas</span>
+    </div>
+    <div class="due-row">
+      <div class="due-card upcoming">
+        <div class="due-date-lbl">07/07/2026 · em 2 dias</div>
+        <div class="due-count">35</div>
+        <div class="due-sub">R$ 4.552 em risco imediato · notificar time hoje</div>
+      </div>
+      <div class="due-card urgent">
+        <div class="due-date-lbl">08/07/2026 · em 3 dias · volume principal</div>
+        <div class="due-count">771</div>
+        <div class="due-sub">R$ 100.413 em aberto · 95,7% dos PE de D-1 · Alipay concentra 544</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ▌4. ALERTAS ▌ -->
   <div class="alert-strip">
-    <svg class="alert-strip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-    <div class="alert-strip-body">
-      <strong>CRITICAL</strong> — CPF 863.457.610-87: 738 transações · 100% HD · 678 nomes distintos · Alipay Brasil · R$ 0,00 convertido · fraude de identidade em escala. &nbsp;|&nbsp;
-      <strong>HIGH</strong> — Kwai APMs: conversão 12,9% (pior da base, média 34,5%). &nbsp;|&nbsp;
-      <strong>HIGH</strong> — BP-DR-18: 3.021 tentativas de clientes desabilitados.
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div class="alert-body">
+      <b>CRITICAL</b> — CPF 863.457.610-87: 738 transações · 100% HD · 678 nomes distintos · Alipay · R$ 0 convertido · fraude de identidade em escala.&nbsp;&nbsp;
+      <b>HIGH</b> — Kwai APMs: conversão 12,9% (pior da base, média geral 34,5%).&nbsp;&nbsp;
+      <b>HIGH</b> — BP-DR-18: 3.021 tentativas de clientes desabilitados no sistema.
     </div>
   </div>
 
-  <!-- KPIs -->
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <span class="kpi-label">Total de boletos</span>
-        <div class="kpi-icon" style="background:var(--accent-dim)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        </div>
+  <!-- ▌5. PRIORIZAÇÃO INTELIGENTE ▌ -->
+  <div>
+    <div class="sec-hdr">
+      <div class="sec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Priorização inteligente — D-1
       </div>
-      <div class="kpi-val">21.036</div>
-      <div class="kpi-meta">
-        <span class="kpi-delta neutral">14 dias</span>
-        <span style="font-size:11px;color:var(--txt3)">10 merchants</span>
+      <span class="sec-meta">ranking automático · ordenado por risco</span>
+    </div>
+    <div class="priority-grid" id="priority-list"></div>
+  </div>
+
+  <!-- ▌6. PE D-1 POR MERCHANT ▌ -->
+  <div>
+    <div class="sec-hdr">
+      <div class="sec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        PE por merchant · 05/07 vs 04/07
+      </div>
+      <span class="sec-meta">variação D-1 vs D-2</span>
+    </div>
+    <div class="mpc-grid" id="mpc-grid"></div>
+  </div>
+
+  <!-- ▌7. KPIs GERAIS ▌ -->
+  <div>
+    <div class="sec-hdr">
+      <div class="sec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Visão geral do período · 22/06 – 05/07
       </div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <span class="kpi-label">Volume financeiro</span>
-        <div class="kpi-icon" style="background:var(--green-dim)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-        </div>
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-lbl">Total de boletos</span><div class="kpi-ico" style="background:var(--accent-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div></div>
+        <div class="kpi-val">21.036</div><div class="kpi-sub">14 dias · 10 merchants</div>
+        <div class="kpi-delta kd-n">Brasil</div>
       </div>
-      <div class="kpi-val">R$ 2,57M</div>
-      <div class="kpi-meta">
-        <span class="kpi-delta neutral">ticket R$ 122</span>
-        <span style="font-size:11px;color:var(--txt3)">BRL</span>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-lbl">Volume financeiro</span><div class="kpi-ico" style="background:var(--green-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div></div>
+        <div class="kpi-val">R$ 2,57M</div><div class="kpi-sub">ticket médio R$ 122</div>
+        <div class="kpi-delta kd-n">BRL</div>
       </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <span class="kpi-label">Taxa de conversão</span>
-        <div class="kpi-icon" style="background:rgba(245,158,11,.1)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-        </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-lbl">Em hold (HD)</span><div class="kpi-ico" style="background:var(--purple-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div></div>
+        <div class="kpi-val">5.031</div><div class="kpi-sub">23,9% — bloqueados antifraude</div>
+        <div class="kpi-delta kd-up">risco elevado</div>
       </div>
-      <div class="kpi-val">34,5%</div>
-      <div class="kpi-meta">
-        <span class="kpi-delta up">abaixo ideal</span>
-        <span style="font-size:11px;color:var(--txt3)">5.383 CO</span>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <span class="kpi-label">Em hold (HD)</span>
-        <div class="kpi-icon" style="background:var(--purple-dim)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-        </div>
-      </div>
-      <div class="kpi-val">5.031</div>
-      <div class="kpi-meta">
-        <span class="kpi-delta up">23,9%</span>
-        <span style="font-size:11px;color:var(--txt3)">risco elevado</span>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <span class="kpi-label">Pendentes (PE)</span>
-        <div class="kpi-icon" style="background:rgba(245,158,11,.08)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-      </div>
-      <div class="kpi-val">7.563</div>
-      <div class="kpi-meta">
-        <span class="kpi-delta up">35,9%</span>
-        <span style="font-size:11px;color:var(--txt3)">do total</span>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <span class="kpi-label">Confirmados (CO)</span>
-        <div class="kpi-icon" style="background:var(--green-dim)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-      </div>
-      <div class="kpi-val">5.383</div>
-      <div class="kpi-meta">
-        <span class="kpi-delta down">25,6%</span>
-        <span style="font-size:11px;color:var(--txt3)">do total</span>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <span class="kpi-label">Cancelados (CA)</span>
-        <div class="kpi-icon" style="background:rgba(255,255,255,.05)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-        </div>
-      </div>
-      <div class="kpi-val">3.059</div>
-      <div class="kpi-meta">
-        <span class="kpi-delta neutral">14,5%</span>
-        <span style="font-size:11px;color:var(--txt3)">do total</span>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <span class="kpi-label">Clientes novos</span>
-        <div class="kpi-icon" style="background:rgba(79,142,247,.08)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-      </div>
-      <div class="kpi-val">19,3%</div>
-      <div class="kpi-meta">
-        <span class="kpi-delta neutral">4.065</span>
-        <span style="font-size:11px;color:var(--txt3)">≤ 30 dias</span>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-lbl">Taxa de conversão</span><div class="kpi-ico" style="background:var(--amber-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg></div></div>
+        <div class="kpi-val">34,5%</div><div class="kpi-sub">5.383 CO de 15.605</div>
+        <div class="kpi-delta kd-up">abaixo alvo</div>
       </div>
     </div>
   </div>
 
-  <!-- Charts row 1 -->
+  <!-- ▌8. CHARTS ▌ -->
   <div class="grid-3-2">
     <div class="card">
       <div class="card-hdr">
         <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Volume diário — últimos 7 dias
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          PE diário — últimos 7 dias
         </div>
         <div class="leg">
-          <span class="leg-item"><span class="leg-sq" style="background:#2a78d6"></span>PE</span>
-          <span class="leg-item"><span class="leg-sq" style="background:#1baf7a"></span>CO</span>
-          <span class="leg-item"><span class="leg-sq" style="background:#7F77DD"></span>HD</span>
-          <span class="leg-item"><span class="leg-sq" style="background:#555870"></span>CA</span>
+          <span class="leg-i"><span class="leg-sq" style="background:#4f8ef7"></span>PE</span>
+          <span class="leg-i"><span class="leg-sq" style="background:#22c55e"></span>CO</span>
+          <span class="leg-i"><span class="leg-sq" style="background:#a78bfa"></span>HD</span>
         </div>
       </div>
-      <div class="chart-wrap ch-240">
-        <canvas id="cDia" role="img" aria-label="Volume diário empilhado por status PE CO HD CA nos últimos 7 dias">Volume diário: PE, CO, HD, CA de 29/06 a 05/07/2026.</canvas>
-      </div>
+      <div class="cw ch-220"><canvas id="cDia" role="img" aria-label="Volume PE CO HD diário últimos 7 dias">Volume diário PE CO HD.</canvas></div>
     </div>
     <div class="card">
       <div class="card-hdr">
         <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-          Distribuição de status
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+          Status geral do período
         </div>
       </div>
-      <div class="chart-wrap ch-240">
-        <canvas id="cStatus" role="img" aria-label="Distribuição percentual de status PE 36% CO 26% HD 24% CA 15%">PE 36%, CO 26%, HD 24%, CA 15%.</canvas>
-      </div>
+      <div class="cw ch-220"><canvas id="cStatus" role="img" aria-label="Status PE CO HD CA">Distribuição de status.</canvas></div>
     </div>
   </div>
 
-  <!-- Charts row 2 -->
   <div class="grid-2">
     <div class="card">
       <div class="card-hdr">
         <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          HD vs CO por dia — anomalia 04–05/07
-        </div>
-        <div class="leg">
-          <span class="leg-item"><span class="leg-sq" style="background:#7F77DD"></span>HD</span>
-          <span class="leg-item"><span class="leg-sq" style="background:#1baf7a"></span>CO</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          PE por merchant — D-1 vs D-2
         </div>
       </div>
-      <div class="chart-wrap ch-200">
-        <canvas id="cHdCo" role="img" aria-label="HD versus CO por dia com anomalia no dia 04 e 05 de julho">HD e CO diários, anomalia em 04-05/07.</canvas>
-      </div>
+      <div class="cw ch-200"><canvas id="cMerchComp" role="img" aria-label="Comparativo PE D-1 D-2 por merchant">Comparativo D-1 D-2.</canvas></div>
     </div>
     <div class="card">
       <div class="card-hdr">
         <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Top merchants — volume PE
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg>
+          Conversão por merchant
         </div>
       </div>
-      <div class="chart-wrap ch-220">
-        <canvas id="cMerch" role="img" aria-label="Volume PE por merchant em barras horizontais">Volume PE por merchant: Alipay, Kwai, Wish, etc.</canvas>
-      </div>
+      <div class="cw ch-200"><canvas id="cConv" role="img" aria-label="Taxa de conversão por merchant">Conversão por merchant.</canvas></div>
     </div>
   </div>
 
-  <!-- Merchants table + right panel -->
-  <div class="grid-3-2">
-    <div class="card">
-      <div class="card-hdr">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          Merchants — performance e risco
+  <!-- ▌9. TABELA MERCHANTS ▌ -->
+  <div>
+    <div class="sec-hdr">
+      <div class="sec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        Detalhamento por merchant · período completo
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Merchant</th><th>Total</th><th>PE</th><th>CO</th>
+          <th>HD</th><th>CA</th><th>Conversão</th><th>BRL</th><th>Risco</th>
+        </tr></thead>
+        <tbody id="merch-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ▌10. PAINÉIS LATERAIS ▌ -->
+  <div class="grid-2-1">
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            CPFs com concentração anômala
+          </div>
+        </div>
+        <div class="cpf-crit-box">
+          <div class="cpf-crit-title">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+            CRITICAL — fraude de identidade em escala
+          </div>
+          <div class="cpf-crit-body">CPF <b>863.457.610-87</b> · 738 transações · 100% HD · <b>678 nomes distintos</b> · Alipay · R$ 0 convertido.</div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>CPF</th><th>Qtd</th><th>Nomes</th><th>Status</th><th>Alerta</th></tr></thead>
+            <tbody id="cpf-tbody"></tbody>
+          </table>
         </div>
       </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Merchant</th><th>Total</th><th>PE</th><th>CO</th>
-              <th>HD</th><th>Conversão</th><th>BRL</th><th>Risco</th>
-            </tr>
-          </thead>
-          <tbody id="merch-tbody"></tbody>
-        </table>
+
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Insights automáticos</div></div>
+        <div class="ins-grid" id="insights"></div>
       </div>
+
     </div>
 
     <div style="display:flex;flex-direction:column;gap:16px">
-      <!-- BP-DR -->
       <div class="card">
-        <div class="card-hdr" style="margin-bottom:10px">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-            Recusas BP-DR
-          </div>
-        </div>
+        <div class="card-hdr" style="margin-bottom:10px"><div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Recusas BP-DR</div></div>
         <div id="bpdr-list"></div>
       </div>
-
-      <!-- Senioridade -->
       <div class="card">
-        <div class="card-hdr" style="margin-bottom:10px">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-            Senioridade dos clientes
-          </div>
-        </div>
-        <div class="sen-item">
-          <span class="sen-lbl">Antigo (&gt;30d)</span>
-          <div class="sen-track"><div class="sen-bar" style="width:80.7%;background:#1baf7a"></div></div>
-          <span class="sen-num">16.971 <span style="font-size:10px;color:var(--txt3)">(81%)</span></span>
-        </div>
-        <div class="sen-item">
-          <span class="sen-lbl">Novo (≤30d)</span>
-          <div class="sen-track"><div class="sen-bar" style="width:19.3%;background:#ef4444"></div></div>
-          <span class="sen-num">4.065 <span style="font-size:10px;color:var(--txt3)">(19%)</span></span>
-        </div>
+        <div class="card-hdr" style="margin-bottom:10px"><div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Senioridade dos clientes</div></div>
+        <div class="sen-i"><span class="sen-lbl">Antigo (&gt;30d)</span><div class="sen-track"><div class="sen-bar" style="width:80.7%;background:#22c55e"></div></div><span class="sen-num">16.971 <span style="font-size:9px;color:var(--txt3)">(81%)</span></span></div>
+        <div class="sen-i"><span class="sen-lbl">Novo (≤30d)</span><div class="sen-track"><div class="sen-bar" style="width:19.3%;background:#ef4444"></div></div><span class="sen-num">4.065 <span style="font-size:9px;color:var(--txt3)">(19%)</span></span></div>
       </div>
-
-      <!-- Fraud Risk Scores -->
       <div class="card">
-        <div class="card-hdr" style="margin-bottom:10px">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Fraud risk score
-          </div>
-        </div>
+        <div class="card-hdr" style="margin-bottom:10px"><div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Fraud risk score</div></div>
         <div id="score-list"></div>
       </div>
     </div>
   </div>
 
-  <!-- CPF table -->
-  <div class="card">
-    <div class="card-hdr">
-      <div class="card-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        CPFs com concentração anômala
-      </div>
-    </div>
-    <div class="cpf-critical">
-      <div class="cpf-critical-title">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
-        CRITICAL — fraude de identidade em escala confirmada
-      </div>
-      <div class="cpf-critical-body">
-        CPF <strong>863.457.610-87</strong> · 738 transações · 100% HD · <strong>678 nomes de clientes distintos</strong> vinculados ao mesmo documento · Alipay Brasil · R$ 0,00 convertido. Padrão consistente com CPF comprometido utilizado para geração de boletos em massa.
-      </div>
-    </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr><th>CPF</th><th>Transações</th><th>Nomes distintos</th><th>Status</th><th>Valor BRL</th><th>Merchant</th><th>Alerta</th></tr>
-        </thead>
-        <tbody id="cpf-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Anomaly warning -->
+  <!-- ▌11. ANOMALY ▌ -->
   <div class="anomaly">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    <span><strong>Anomalia detectada — 04 e 05/07:</strong> CO despenca de média ~450/dia para 24 em 04/07 e <strong>zero</strong> em 05/07. Volume PE e HD permanecem elevados. Possíveis causas: janela de vencimento de boletos, sazonalidade de fim de semana ou interrupção de processamento. Requer validação com time operacional.</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span><b>Anomalia — 04 e 05/07:</b> CO caiu de média ~450/dia para 24 em 04/07 e <b>zero</b> em 05/07. PE e HD permanecem elevados. Possível causa: janela de vencimento ou sazonalidade de fim de semana. Validar com time operacional.</span>
   </div>
 
-  <!-- Insights -->
-  <div class="card">
-    <div class="card-hdr">
-      <div class="card-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        Insights automáticos
-      </div>
-    </div>
-    <div class="insights-grid" id="insights-grid"></div>
-  </div>
-
-  <!-- Agent -->
+  <!-- ▌12. COPILOT CHAT ▌ -->
   <div class="agent-wrap">
-    <div class="agent-head">
-      <div class="agent-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <div class="agent-hdr">
+      <div class="agent-ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       </div>
-      <div class="agent-head-info">
-        <div class="agent-head-name">Fraud Prevention Agent</div>
-        <div class="agent-head-sub">Análise com IA · dados reais da base</div>
+      <div class="agent-info">
+        <div class="agent-name">Fraud Intelligence Copilot</div>
+        <div class="agent-sub">Pergunte em linguagem natural · responde com base nos dados reais da monitoria</div>
       </div>
       <span class="agent-badge">Claude Sonnet</span>
     </div>
-
     <div class="agent-msgs" id="agent-msgs">
-      <div class="msg-agent">Base carregada: <strong>21.036 transações</strong> · 22/06–05/07/2026 · Brasil · 10 merchants. Identifico <strong>1 alerta CRITICAL</strong> (CPF 863.457.610-87, fraude de identidade) e <strong>2 alertas HIGH</strong> (Kwai APMs e BP-DR-18). Use os atalhos abaixo ou faça uma pergunta específica.</div>
+      <div class="msg-a">Olá! Sou o <b>Fraud Intelligence Copilot</b>. Já li os dados de D-1 (05/07/2026): <b>806 PE · R$ 104.965 em aberto · 771 boletos vencem em 08/07</b>. Identifiquei 1 alerta CRITICAL e 2 HIGH. Me pergunte qualquer coisa sobre a monitoria de hoje — em linguagem natural.</div>
     </div>
-
     <div class="agent-quick">
-      <button class="qbtn" onclick="sq('Execute as 5 etapas completas de investigação: 21036 transações Brasil, Alipay 16090 conv39%, Kwai 1563 conv12.9%, Wish 1349 HD39%, CamelPay 672 HD31% histórico fraude, CPF 86345761087 738tx 100%HD 678nomes, BP-DR-18=3021, BP-DR-602=1755, anomalia 04-05/07 CO zerado. Gere alertas priorizados e recomendações.')">Análise completa ↗</button>
-      <button class="qbtn" onclick="sq('Gere o incidente Monday.com completo para CPF 86345761087: 738 transações 100% HD Alipay Brasil, 678 nomes distintos, R$0 convertido. Título, resumo, evidências, impacto, hipóteses, recomendação, prioridade e tags.')">Incidente Monday ↗</button>
-      <button class="qbtn" onclick="sq('Kwai APMs tem conversão de 12.9%, pior da base (média 34.5%). CPF 3391226412 com 77 transações 87% PE e R$17.191. É fraude ou problema operacional? Recomende ações específicas.')">Diagnóstico Kwai ↗</button>
-      <button class="qbtn" onclick="sq('Analise BP-DR-18=3021 e BP-DR-602=1755 na base. O que esse padrão indica sobre tentativas de fraude? Qual é o risco financeiro e quais merchants concentram mais essas recusas?')">Padrão BP-DR ↗</button>
-      <button class="qbtn" onclick="sq('O dia 04/07 teve CO=24 e 05/07 teve CO=0, contra média de ~450/dia. Analise: é fraude, sazonalidade de fim de semana ou falha operacional? HD e PE nesses dias continuam elevados.')">Anomalia 04-05/07 ↗</button>
-      <button class="qbtn" onclick="sq('CamelPay: 672 transações, HD=206 (30.7%), CO=122 (26.2%), histórico de fraude confirmado. Wish: HD=531 (39.4%). Recomende regras Konduto específicas para cada merchant baseado no padrão observado.')">Regras Konduto ↗</button>
+      <button class="qbtn" onclick="sq('O que mudou desde ontem nos boletos PE? Quais merchants tiveram maiores variações?')">O que mudou? ↗</button>
+      <button class="qbtn" onclick="sq('Quais merchants devo investigar hoje com prioridade? Justifique com base nos dados.')">Prioridades ↗</button>
+      <button class="qbtn" onclick="sq('Qual APM apresentou maior aumento de PE em D-1?')">Maior aumento PE ↗</button>
+      <button class="qbtn" onclick="sq('Houve alguma anomalia nos últimos 7 dias? Analise PE, CO e HD dia a dia.')">Anomalias ↗</button>
+      <button class="qbtn" onclick="sq('Resuma a monitoria de boletos de hoje em 5 linhas para apresentar ao time.')">Resumo 5 linhas ↗</button>
+      <button class="qbtn" onclick="sq('Gere o incidente Monday.com completo para o CPF 86345761087: 738 transações 100% HD, 678 nomes distintos, Alipay Brasil.')">Incidente Monday ↗</button>
+      <button class="qbtn" onclick="sq('Existe alguma tendência preocupante nos dados dos últimos 7 dias?')">Tendências ↗</button>
+      <button class="qbtn" onclick="sq('Explique o nível de risco de cada merchant em uma frase cada.')">Explicar riscos ↗</button>
     </div>
-
-    <div class="agent-input">
-      <input type="text" id="agent-input" placeholder="Pergunte sobre merchant, CPF, padrão ou anomalia específica…" onkeydown="if(event.key==='Enter')sendMsg()"/>
-      <button class="agent-send" onclick="sendMsg()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    <div class="agent-inp">
+      <input type="text" id="ai-inp" placeholder="Ex: O que mudou ontem? Quais merchants investigar? Existe tendência preocupante?" onkeydown="if(event.key==='Enter')sendMsg()"/>
+      <button class="btn-send" onclick="sendMsg()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         Enviar
       </button>
     </div>
   </div>
 
-  <div class="page-footer">Dados reais extraídos da planilha results-20260706-171755 · ID 1wXxByzKuhbxl7k_qSHjXUnu0g98jXJBXzOYBqXlcN2o · EBANX Fraud Prevention</div>
+  <div class="page-footer">
+    Fraud Intelligence Copilot · EBANX Fraud Prevention · Boleto Brasil<br>
+    Dados: planilha results-20260706-171755 · ID 1wXxByzKuhbxl7k_qSHjXUnu0g98jXJBXzOYBqXlcN2o · 22/06 – 05/07/2026
+  </div>
 
 </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 // ── Clock ──
 function tick(){
-  const now=new Date();
-  document.getElementById('hdr-clock').textContent=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('hdr-sub').textContent='Última análise: '+now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · Brasil · 10 merchants';
+  const n=new Date();
+  document.getElementById('hdr-clock').textContent=n.toLocaleTimeString('pt-BR');
+  document.getElementById('sb-time').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
 tick();setInterval(tick,1000);
+function toggleSb(){document.getElementById('sb').classList.toggle('open');document.getElementById('overlay').classList.toggle('open');}
+function refreshUI(){const b=document.querySelector('.btn-ref');b.style.opacity='.4';setTimeout(()=>b.style.opacity='1',800);}
 
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('open');
-}
-function refreshPage(){
-  const btn=document.querySelector('.btn-refresh');
-  btn.style.opacity='.5';
-  setTimeout(()=>btn.style.opacity='1',1000);
-}
+// ── Data ──
+const D1=[
+  {n:'Alipay',      pe:544,brl:79507, prev:551,conv:39.0,risk:'MEDIUM',rc:'b-med',
+   reason:'Concentra 67,5% dos PE · vencimentos críticos em 08/07 · CPF CRITICAL ativo'},
+  {n:'Kwai APMs',   pe:123,brl:3506,  prev:124,conv:12.9,risk:'CRITICAL',rc:'b-crit',
+   reason:'Pior conversão da base (12,9%) · CPF 339.122.641-2 com R$17.191 em PE'},
+  {n:'Wish',        pe:22, brl:3550,  prev:6,  conv:18.2,risk:'HIGH',rc:'b-high',
+   reason:'PE aumentou +267% em D-1 (6→22) · HD=39% do período · investigar causa'},
+  {n:'TradeInn',    pe:14, brl:5090,  prev:6,  conv:27.5,risk:'HIGH',rc:'b-high',
+   reason:'PE aumentou +133% em D-1 (6→14) · ticket médio elevado · aumento abrupto'},
+  {n:'CamelPay',    pe:27, brl:6953,  prev:57, conv:26.2,risk:'HIGH',rc:'b-high',
+   reason:'Histórico de fraude · HD=31% · queda PE pode ser sazonalidade, monitorar'},
+  {n:'Temu.com',    pe:28, brl:3358,  prev:29, conv:11.5,risk:'CRITICAL',rc:'b-crit',
+   reason:'Segunda pior conversão (11,5%) · PE estável mas base de comparação baixa'},
+  {n:'Gisele IWS',  pe:18, brl:920,   prev:10, conv:22.6,risk:'MEDIUM',rc:'b-med',
+   reason:'PE aumentou +80% · volume pequeno mas crescimento relativo alto'},
+  {n:'Blanche IWS', pe:14, brl:605,   prev:10, conv:29.9,risk:'MEDIUM',rc:'b-med',
+   reason:'PE aumentou +40% · volume pequeno · manter monitoramento'},
+  {n:'TikTok Live', pe:16, brl:1477,  prev:20, conv:29.3,risk:'MEDIUM',rc:'b-med',
+   reason:'PE caiu −20% · comportamento dentro da normalidade'},
+];
 
-// ── Chart defaults ──
-const gridC='#1c2030',txtM='#555870',txtS='#8b8fa8';
-Chart.defaults.font.family="'Inter',system-ui,sans-serif";
-Chart.defaults.color=txtM;
+// ── Priorização inteligente ──
+const PRIO=[
+  {rank:1,level:'🔴',pc:'pl-crit',item:'crit',name:'Kwai APMs',
+   reason:'Conversão 12,9% (pior da base) · CPF com R$17.191 em PE pendente',
+   tags:[{t:'PE 123',c:'pm-pe'},{t:'conv 12,9%',c:'pm-delta-up'},{t:'CRITICAL',c:'pm-delta-up'}]},
+  {rank:2,level:'🔴',pc:'pl-crit',item:'crit',name:'CPF 863.457.610-87 — Alipay',
+   reason:'738 transações 100% HD · 678 nomes distintos · fraude de identidade confirmada',
+   tags:[{t:'738 HD',c:'pm-hd'},{t:'678 nomes',c:'pm-delta-up'},{t:'R$ 0 conv.',c:'pm-delta-up'}]},
+  {rank:3,level:'🟠',pc:'pl-high',item:'high',name:'Wish — aumento +267% PE',
+   reason:'PE saltou de 6 para 22 em D-1 · HD=39% no período · investigar origem',
+   tags:[{t:'PE +267%',c:'pm-delta-up'},{t:'HD 39%',c:'pm-hd'},{t:'HIGH',c:'pm-delta-up'}]},
+  {rank:4,level:'🟠',pc:'pl-high',item:'high',name:'TradeInn — aumento +133% PE',
+   reason:'PE saltou de 6 para 14 · ticket médio R$364 (acima da média) · padrão incomum',
+   tags:[{t:'PE +133%',c:'pm-delta-up'},{t:'R$ 5.090',c:'pm-pe'},{t:'HIGH',c:'pm-delta-up'}]},
+  {rank:5,level:'🟠',pc:'pl-high',item:'high',name:'CamelPay — monitorar',
+   reason:'Histórico de fraude confirmado · HD=31% · queda PE pode ser sazonalidade',
+   tags:[{t:'PE −52%',c:'pm-delta-down'},{t:'HD 31%',c:'pm-hd'},{t:'histórico fraude',c:'pm-delta-up'}]},
+  {rank:6,level:'🟡',pc:'pl-med',item:'med',name:'Temu.com — conversão baixa',
+   reason:'Segunda pior conversão: 11,5% · volume estável mas taxa preocupante',
+   tags:[{t:'PE 28',c:'pm-pe'},{t:'conv 11,5%',c:'pm-delta-up'},{t:'CRITICAL',c:'pm-delta-up'}]},
+];
+const pl=document.getElementById('priority-list');
+PRIO.forEach(p=>{
+  pl.innerHTML+=`<div class="prio-item ${p.item}">
+    <span class="prio-rank">${p.rank}</span>
+    <div class="prio-level ${p.pc}">${p.level}</div>
+    <div class="prio-body">
+      <div class="prio-name">${p.name}</div>
+      <div class="prio-reason">${p.reason}</div>
+    </div>
+    <div class="prio-metrics">${p.tags.map(t=>`<span class="pm ${t.c}">${t.t}</span>`).join('')}</div>
+  </div>`;
+});
 
-// ── Chart: Volume diário ──
+// ── Merchant PE cards ──
+const mpc=document.getElementById('mpc-grid');
+D1.forEach(m=>{
+  const d=(m.pe-m.prev)/m.prev*100;
+  const dc=d>15?'md-up':d<-10?'md-down':'md-neu';
+  const darr=d>15?'↑':d<-10?'↓':'→';
+  mpc.innerHTML+=`<div class="mpc">
+    <div class="mpc-name" title="${m.n}">${m.n}</div>
+    <div class="mpc-pe">${m.pe}</div>
+    <div class="mpc-brl">R$ ${m.brl.toLocaleString('pt-BR')}</div>
+    <div class="mpc-delta ${dc}">${darr} ${d>=0?'+':''}${d.toFixed(1)}%</div>
+    <div class="mpc-badge"><span class="badge ${m.rc}">${m.risk}</span></div>
+  </div>`;
+});
+
+// ── Charts ──
+const g='#1c2030',tm='#555870',ts='#8b8fa8';
 const dias=['29/06','30/06','01/07','02/07','03/07','04/07','05/07'];
-new Chart(document.getElementById('cDia'),{
-  type:'bar',
+
+new Chart(document.getElementById('cDia'),{type:'bar',
   data:{labels:dias,datasets:[
-    {label:'PE',data:[702,810,960,827,878,813,806],backgroundColor:'#2a78d6cc',borderRadius:3,barPercentage:.78,categoryPercentage:.85},
-    {label:'CO',data:[411,582,582,536,386,24,0],backgroundColor:'#1baf7acc',borderRadius:3,barPercentage:.78,categoryPercentage:.85},
-    {label:'HD',data:[536,414,391,246,662,354,73],backgroundColor:'#7F77DDcc',borderRadius:3,barPercentage:.78,categoryPercentage:.85},
-    {label:'CA',data:[4,2,9,0,2,1,3],backgroundColor:'#55587099',borderRadius:3,barPercentage:.78,categoryPercentage:.85},
+    {label:'PE',data:[702,810,960,827,878,813,806],backgroundColor:'#4f8ef7bb',borderRadius:3,barPercentage:.8,categoryPercentage:.82},
+    {label:'CO',data:[411,582,582,536,386,24,0],backgroundColor:'#22c55ebb',borderRadius:3,barPercentage:.8,categoryPercentage:.82},
+    {label:'HD',data:[536,414,391,246,662,354,73],backgroundColor:'#a78bfabb',borderRadius:3,barPercentage:.8,categoryPercentage:.82},
   ]},
   options:{responsive:true,maintainAspectRatio:false,
     plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,backgroundColor:'#111420',borderColor:'#1c2030',borderWidth:1,padding:10,titleColor:'#e4e6f0',bodyColor:'#8b8fa8'}},
-    scales:{
-      x:{stacked:true,ticks:{color:txtM,font:{size:10}},grid:{display:false},border:{display:false}},
-      y:{stacked:true,ticks:{color:txtM,font:{size:10}},grid:{color:gridC},border:{display:false}}
-    }}
+    scales:{x:{stacked:true,ticks:{color:tm,font:{size:10}},grid:{display:false},border:{display:false}},y:{stacked:true,ticks:{color:tm,font:{size:10}},grid:{color:g},border:{display:false}}}}
 });
 
-// ── Chart: Status donut ──
-new Chart(document.getElementById('cStatus'),{
-  type:'doughnut',
-  data:{
-    labels:['PE — 36%','CO — 26%','HD — 24%','CA — 15%'],
-    datasets:[{data:[7563,5383,5031,3059],backgroundColor:['#2a78d6','#1baf7a','#7F77DD','#555870'],borderWidth:0,hoverOffset:6}]
-  },
-  options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
-    plugins:{legend:{display:true,position:'bottom',labels:{color:txtS,font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#111420',borderColor:'#1c2030',borderWidth:1,padding:10}}}
+new Chart(document.getElementById('cStatus'),{type:'doughnut',
+  data:{labels:['PE 36%','CO 26%','HD 24%','CA 15%'],datasets:[{data:[7563,5383,5031,3059],backgroundColor:['#4f8ef7','#22c55e','#a78bfa','#555870'],borderWidth:0,hoverOffset:6}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+    plugins:{legend:{display:true,position:'bottom',labels:{color:ts,font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#111420',borderColor:'#1c2030',borderWidth:1,padding:10}}}
 });
 
-// ── Chart: HD vs CO ──
-new Chart(document.getElementById('cHdCo'),{
-  type:'line',
-  data:{labels:dias,datasets:[
-    {label:'HD',data:[536,414,391,246,662,354,73],borderColor:'#7F77DD',backgroundColor:'rgba(127,119,221,.08)',tension:.35,pointRadius:4,pointBackgroundColor:'#7F77DD',borderWidth:2,fill:true},
-    {label:'CO',data:[411,582,582,536,386,24,0],borderColor:'#1baf7a',backgroundColor:'rgba(27,175,122,.08)',tension:.35,pointRadius:4,pointBackgroundColor:'#1baf7a',borderWidth:2,fill:true},
+const mns=D1.map(m=>m.n.length>10?m.n.slice(0,10)+'…':m.n);
+new Chart(document.getElementById('cMerchComp'),{type:'bar',
+  data:{labels:mns,datasets:[
+    {label:'D-1 (05/07)',data:D1.map(m=>m.pe),backgroundColor:'#4f8ef7bb',borderColor:'#4f8ef7',borderWidth:1,borderRadius:3,barPercentage:.42},
+    {label:'D-2 (04/07)',data:D1.map(m=>m.prev),backgroundColor:'#55587088',borderColor:'#555870',borderWidth:1,borderRadius:3,barPercentage:.42},
   ]},
   options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,backgroundColor:'#111420',borderColor:'#1c2030',borderWidth:1,padding:10}},
-    scales:{
-      x:{ticks:{color:txtM,font:{size:10}},grid:{display:false},border:{display:false}},
-      y:{ticks:{color:txtM,font:{size:10}},grid:{color:gridC},border:{display:false}}
-    }}
+    plugins:{legend:{display:true,labels:{color:ts,font:{size:10},boxWidth:10,padding:10}},tooltip:{backgroundColor:'#111420',borderColor:'#1c2030',borderWidth:1,padding:10}},
+    scales:{x:{ticks:{color:tm,font:{size:9},maxRotation:35},grid:{display:false},border:{display:false}},y:{ticks:{color:tm,font:{size:10}},grid:{color:g},border:{display:false}}}}
 });
 
-// ── Chart: Top merchants ──
-const mNames=['Alipay','Kwai APMs','Temu.com','Wish','TikTok Live','CamelPay','Gisele IWS','TradeInn','Blanche IWS','Temu BR'];
-const mPE=[5201,1011,314,371,171,264,73,78,70,10];
-new Chart(document.getElementById('cMerch'),{
-  type:'bar',
-  data:{
-    labels:mNames,
-    datasets:[{label:'Volume PE',data:mPE,backgroundColor:mPE.map((_,i)=>i<2?'#ef444499':'#2a78d699'),borderColor:mPE.map((_,i)=>i<2?'#ef4444':'#2a78d6'),borderWidth:1,borderRadius:4,barPercentage:.65}]
-  },
+const convData=[...D1].sort((a,b)=>b.conv-a.conv);
+new Chart(document.getElementById('cConv'),{type:'bar',
+  data:{labels:convData.map(m=>m.n.length>8?m.n.slice(0,8)+'…':m.n),datasets:[{label:'%',data:convData.map(m=>m.conv),backgroundColor:convData.map(m=>m.conv<15?'#ef444499':m.conv<25?'#f59e0b99':'#22c55e99'),borderColor:convData.map(m=>m.conv<15?'#ef4444':m.conv<25?'#f59e0b':'#22c55e'),borderWidth:1,borderRadius:4,barPercentage:.6}]},
   options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
-    plugins:{legend:{display:false},tooltip:{backgroundColor:'#111420',borderColor:'#1c2030',borderWidth:1,padding:10}},
-    scales:{
-      x:{ticks:{color:txtM,font:{size:10}},grid:{color:gridC},border:{display:false}},
-      y:{ticks:{color:txtS,font:{size:10}},grid:{display:false},border:{display:false}}
-    }}
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#111420',borderColor:'#1c2030',borderWidth:1,padding:10,callbacks:{label:c=>`${c.parsed.x.toFixed(1)}%`}}},
+    scales:{x:{ticks:{color:tm,font:{size:10},callback:v=>v+'%'},grid:{color:g},border:{display:false},max:50},y:{ticks:{color:ts,font:{size:10}},grid:{display:false},border:{display:false}}}}
 });
 
-// ── Merchants table ──
-const merchants=[
-  {n:'Alipay',tot:16090,pe:5201,co:4642,hd:4202,conv:39.0,brl:'R$ 2,1M',risk:'MEDIUM',rc:'badge-med'},
-  {n:'Kwai APMs',tot:1563,pe:1011,co:199,hd:16,conv:12.9,brl:'R$ 97k',risk:'CRITICAL',rc:'badge-crit'},
-  {n:'Wish',tot:1349,pe:371,co:149,hd:531,conv:18.2,brl:'R$ 65k',risk:'HIGH',rc:'badge-high'},
-  {n:'CamelPay',tot:672,pe:264,co:122,hd:206,conv:26.2,brl:'R$ 110k',risk:'HIGH',rc:'badge-high'},
-  {n:'Temu.com',tot:516,pe:314,co:59,hd:1,conv:11.5,brl:'R$ 63k',risk:'CRITICAL',rc:'badge-crit'},
-  {n:'TikTok Live',tot:351,pe:171,co:99,hd:13,conv:29.3,brl:'R$ 37k',risk:'MEDIUM',rc:'badge-med'},
-  {n:'TradeInn',tot:189,pe:78,co:49,hd:11,conv:27.5,brl:'R$ 61k',risk:'MEDIUM',rc:'badge-med'},
-  {n:'Blanche IWS',tot:155,pe:70,co:38,hd:28,conv:29.9,brl:'R$ 6k',risk:'MEDIUM',rc:'badge-med'},
-  {n:'Gisele IWS',tot:138,pe:73,co:26,hd:23,conv:22.6,brl:'R$ 6k',risk:'MEDIUM',rc:'badge-med'},
-  {n:'Temu Brazil',tot:13,pe:10,co:0,hd:0,conv:0,brl:'R$ 1k',risk:'HIGH',rc:'badge-high'},
+// ── Merchant table ──
+const MERCHANTS=[
+  {n:'Alipay',tot:16090,pe:5201,co:4642,hd:4202,ca:2045,conv:39.0,brl:'R$ 2,1M',risk:'MEDIUM',rc:'b-med'},
+  {n:'Kwai APMs',tot:1563,pe:1011,co:199,hd:16,ca:337,conv:12.9,brl:'R$ 97k',risk:'CRITICAL',rc:'b-crit'},
+  {n:'Wish',tot:1349,pe:371,co:149,hd:531,ca:298,conv:18.2,brl:'R$ 65k',risk:'HIGH',rc:'b-high'},
+  {n:'CamelPay',tot:672,pe:264,co:122,hd:206,ca:80,conv:26.2,brl:'R$ 110k',risk:'HIGH',rc:'b-high'},
+  {n:'Temu.com',tot:516,pe:314,co:59,hd:1,ca:142,conv:11.5,brl:'R$ 63k',risk:'CRITICAL',rc:'b-crit'},
+  {n:'TikTok Live',tot:351,pe:171,co:99,hd:13,ca:68,conv:29.3,brl:'R$ 37k',risk:'MEDIUM',rc:'b-med'},
+  {n:'TradeInn',tot:189,pe:78,co:49,hd:11,ca:51,conv:27.5,brl:'R$ 61k',risk:'HIGH',rc:'b-high'},
+  {n:'Blanche IWS',tot:155,pe:70,co:38,hd:28,ca:19,conv:29.9,brl:'R$ 6k',risk:'MEDIUM',rc:'b-med'},
+  {n:'Gisele IWS',tot:138,pe:73,co:26,hd:23,ca:16,conv:22.6,brl:'R$ 6k',risk:'MEDIUM',rc:'b-med'},
+  {n:'Temu Brazil',tot:13,pe:10,co:0,hd:0,ca:3,conv:0,brl:'R$ 1k',risk:'HIGH',rc:'b-high'},
 ];
 const mtb=document.getElementById('merch-tbody');
-merchants.forEach(m=>{
+MERCHANTS.forEach(m=>{
   const cc=m.conv<15?'#ef4444':m.conv<25?'#f59e0b':'#22c55e';
-  const cw=Math.round(m.conv);
   mtb.innerHTML+=`<tr>
     <td style="font-weight:500">${m.n}</td>
     <td>${m.tot.toLocaleString('pt-BR')}</td>
-    <td><span class="badge badge-pe">${m.pe.toLocaleString('pt-BR')}</span></td>
-    <td><span class="badge badge-co">${m.co.toLocaleString('pt-BR')}</span></td>
-    <td><span class="badge badge-hd">${m.hd.toLocaleString('pt-BR')}</span></td>
-    <td><div class="conv-cell"><span style="font-size:12px;font-weight:600;color:${cc}">${m.conv.toFixed(1)}%</span><div class="conv-bar"><div class="conv-fill" style="width:${cw}%;background:${cc}"></div></div></div></td>
-    <td style="font-size:11px;color:var(--txt2)">${m.brl}</td>
+    <td><span class="badge b-pe">${m.pe.toLocaleString('pt-BR')}</span></td>
+    <td><span class="badge b-co">${m.co.toLocaleString('pt-BR')}</span></td>
+    <td><span class="badge b-hd">${m.hd.toLocaleString('pt-BR')}</span></td>
+    <td><span class="badge b-ca">${m.ca.toLocaleString('pt-BR')}</span></td>
+    <td><div class="conv-c"><span style="font-weight:600;color:${cc}">${m.conv.toFixed(1)}%</span><div class="conv-track"><div class="conv-fill" style="width:${Math.min(m.conv*2,100)}%;background:${cc}"></div></div></div></td>
+    <td style="font-size:11px;color:${ts}">${m.brl}</td>
     <td><span class="badge ${m.rc}">${m.risk}</span></td>
   </tr>`;
 });
 
-// ── BP-DR ──
-const bpdrs=[
-  {code:'BP-DR-18',desc:'cliente desabilitado',ct:3021},
-  {code:'BP-DR-602',desc:'sem motivo detalhado',ct:1755},
-  {code:'BP-DR-40',desc:'limite mensal',ct:97},
-  {code:'BP-DR-600',desc:'desabilitado (v2)',ct:79},
-  {code:'BP-DR-113',desc:'transação inválida',ct:55},
-  {code:'BP-DR-23',desc:'CPF inválido',ct:20},
-];
-const bl=document.getElementById('bpdr-list');
-bpdrs.forEach(b=>{
-  const w=Math.round(b.ct/3021*100);
-  bl.innerHTML+=`<div class="bpdr-item">
-    <span class="bpdr-code">${b.code}</span>
-    <span class="bpdr-desc">${b.desc}</span>
-    <div class="bpdr-track"><div class="bpdr-fill" style="width:${w}%"></div></div>
-    <span class="bpdr-ct">${b.ct.toLocaleString('pt-BR')}</span>
-  </div>`;
-});
-
-// ── Fraud Risk Scores ──
-const scores=[
-  {n:'CPF 863...087 — Alipay',s:97,c:'#ef4444'},
-  {n:'Kwai APMs — conversão',s:78,c:'#f97316'},
-  {n:'BP-DR-18 — volume',s:74,c:'#f97316'},
-  {n:'Wish — 39% HD',s:68,c:'#f59e0b'},
-  {n:'CamelPay — 31% HD',s:62,c:'#f59e0b'},
-];
-const sl=document.getElementById('score-list');
-scores.forEach(s=>{
-  sl.innerHTML+=`<div class="score-item">
-    <span class="score-name">${s.n}</span>
-    <div class="score-track"><div class="score-fill" style="width:${s.s}%;background:${s.c}"></div></div>
-    <span class="score-val" style="color:${s.c}">${s.s}</span>
-  </div>`;
-});
-
 // ── CPF table ──
-const cpfs=[
-  {cpf:'863.457.610-87',ct:738,nomes:678,status:'100% HD',brl:'R$ 0',merchant:'Alipay',nivel:'badge-crit',lbl:'CRITICAL'},
-  {cpf:'107.538.026-00',ct:195,nomes:2,status:'96% HD',brl:'R$ 619',merchant:'Alipay',nivel:'badge-high',lbl:'HIGH'},
-  {cpf:'247.493.970-9',ct:190,nomes:1,status:'29% HD',brl:'R$ 26.295',merchant:'CamelPay',nivel:'badge-high',lbl:'HIGH'},
-  {cpf:'398.992.177',ct:150,nomes:10,status:'80% HD',brl:'R$ 904',merchant:'Alipay+Wish',nivel:'badge-high',lbl:'HIGH'},
-  {cpf:'339.122.641-2',ct:77,nomes:1,status:'87% PE',brl:'R$ 17.191',merchant:'Kwai',nivel:'badge-med',lbl:'MEDIUM'},
-  {cpf:'452.872.868-05',ct:71,nomes:5,status:'61% HD',brl:'R$ 1.135',merchant:'Alipay+Wish',nivel:'badge-med',lbl:'MEDIUM'},
+const CPFS=[
+  {cpf:'863.457.610-87',ct:738,nomes:678,status:'100% HD',risk:'b-crit',lbl:'CRITICAL'},
+  {cpf:'107.538.026-00',ct:195,nomes:2,  status:'96% HD', risk:'b-high',lbl:'HIGH'},
+  {cpf:'247.493.970-9', ct:190,nomes:1,  status:'29% HD', risk:'b-high',lbl:'HIGH'},
+  {cpf:'398.992.177',   ct:150,nomes:10, status:'80% HD', risk:'b-high',lbl:'HIGH'},
+  {cpf:'339.122.641-2', ct:77, nomes:1,  status:'87% PE', risk:'b-med', lbl:'MEDIUM'},
+  {cpf:'452.872.868-05',ct:71, nomes:5,  status:'61% HD', risk:'b-med', lbl:'MEDIUM'},
 ];
 const ctb=document.getElementById('cpf-tbody');
-cpfs.forEach(c=>{
-  const nc=c.nomes>10?'color:#ef4444;font-weight:600':c.nomes>3?'color:#f59e0b;font-weight:500':'color:var(--txt3)';
+CPFS.forEach(c=>{
+  const nc=c.nomes>10?'color:#ef4444;font-weight:700':c.nomes>3?'color:#f59e0b;font-weight:600':'color:var(--txt3)';
   ctb.innerHTML+=`<tr>
-    <td style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px">${c.cpf}</td>
+    <td style="font-family:monospace;font-size:11px">${c.cpf}</td>
     <td style="font-weight:600">${c.ct}</td>
     <td style="${nc}">${c.nomes}</td>
-    <td style="font-size:11px;color:var(--txt2)">${c.status}</td>
-    <td style="font-size:11px">${c.brl}</td>
-    <td style="font-size:11px;color:var(--txt2)">${c.merchant}</td>
-    <td><span class="badge ${c.nivel}">${c.lbl}</span></td>
+    <td style="font-size:11px;color:${ts}">${c.status}</td>
+    <td><span class="badge ${c.risk}">${c.lbl}</span></td>
   </tr>`;
 });
 
-// ── Insights ──
-const insights=[
-  'Alipay concentra 76,5% do volume total (16.090 de 21.036) e 96,6% do valor financeiro (R$ 2,1M).',
-  'Kwai APMs tem conversão de 12,9% — 21,6 p.p. abaixo da média geral de 34,5%. Pior da base.',
-  'Wish tem 39,4% das transações em HD (531/1.349). Proporção 65% acima da média (23,9%).',
-  'CPF 863.457.610-87 gera 14,7% de todos os HDs da base sozinho (738 de 5.031), 678 nomes.',
-  'BP-DR-18 = 63,2% de todas as recusas (3.021 de 4.778). Clientes banidos tentando operar.',
-  '04/07: CO=24 (−94% vs média). 05/07: CO=0. Anomalia operacional ou de vencimento.',
+// ── BP-DR ──
+const BPDRS=[
+  {code:'BP-DR-18',desc:'cliente desabilitado',ct:3021},
+  {code:'BP-DR-602',desc:'sem motivo',ct:1755},
+  {code:'BP-DR-40',desc:'limite mensal',ct:97},
+  {code:'BP-DR-600',desc:'desabilitado v2',ct:79},
+  {code:'BP-DR-113',desc:'inválido',ct:55},
+  {code:'BP-DR-23',desc:'CPF inválido',ct:20},
 ];
-const ig=document.getElementById('insights-grid');
-insights.forEach(t=>{
-  ig.innerHTML+=`<div class="insight"><span class="insight-dot"></span><span>${t}</span></div>`;
-});
+document.getElementById('bpdr-list').innerHTML=BPDRS.map(b=>`<div class="bpdr-i">
+  <span class="bpdr-code">${b.code}</span>
+  <span class="bpdr-desc">${b.desc}</span>
+  <div class="bpdr-track"><div class="bpdr-fill" style="width:${Math.round(b.ct/3021*100)}%"></div></div>
+  <span class="bpdr-ct">${b.ct.toLocaleString('pt-BR')}</span>
+</div>`).join('');
 
-// ── Agent ──
-const SYSTEM=`Você é um Fraud Prevention Senior Analyst da EBANX, especializado em boleto.
+// ── Scores ──
+const SCORES=[
+  {n:'CPF 863...087 — Alipay',s:97,c:'#ef4444'},
+  {n:'Kwai APMs — conv. 12,9%',s:78,c:'#f97316'},
+  {n:'BP-DR-18 — 3.021 hits',s:74,c:'#f97316'},
+  {n:'Wish — HD 39% + PE +267%',s:68,c:'#f59e0b'},
+  {n:'CamelPay — histórico fraude',s:62,c:'#f59e0b'},
+];
+document.getElementById('score-list').innerHTML=SCORES.map(s=>`<div class="score-i">
+  <span class="score-name">${s.n}</span>
+  <div class="score-track"><div class="score-fill" style="width:${s.s}%;background:${s.c}"></div></div>
+  <span class="score-val" style="color:${s.c}">${s.s}</span>
+</div>`).join('');
 
-BASE REAL (22/06–05/07/2026, Brasil):
-Total: 21.036 · BRL 2.573.772 · ticket R$122 · conversão 34,5%
-Status: PE=7563(36%) CO=5383(26%) HD=5031(24%) CA=3059(15%)
+// ── Insights ──
+const INSIGHTS=[
+  '806 PE ontem. 771 vencem em 08/07 — R$ 100.413 em risco de expiração imediata.',
+  'Wish: PE +267% em D-1 (6→22). Wish HD=39% no período. Investigar origem do spike.',
+  'TradeInn: PE +133% (6→14) com ticket médio de R$ 364. Aumento abrupto e incomum.',
+  'CamelPay PE −52% (57→27). Queda positiva, mas HD=31% e histórico de fraude persistem.',
+  'Alipay concentra 67,5% do PE de D-1 (544 de 806) e 95,7% do vencimento de 08/07.',
+  'Anomalia 04–05/07: CO zerado vs média de ~450/dia. Validar com time operacional.',
+];
+document.getElementById('insights').innerHTML=INSIGHTS.map(t=>`<div class="ins-item"><span class="ins-dot"></span><span>${t}</span></div>`).join('');
 
-Merchants:
-- Alipay: 16090 (PE5201 CO4642 HD4202 CA2045) conv=39% BRL=2,1M
-- Kwai APMs: 1563 (PE1011 CO199 HD16 CA337) conv=12,9% BRL=97k
-- Wish: 1349 (PE371 CO149 HD531 CA298) conv=18,2% BRL=65k HD=39%
-- CamelPay: 672 (PE264 CO122 HD206 CA80) conv=26,2% BRL=110k — histórico fraude
-- Temu.com: 516 (PE314 CO59 HD1 CA142) conv=11,5% BRL=63k
-- TikTok Live: 351 (PE171 CO99 HD13 CA68) conv=29,3%
-- TradeInn: 189 (PE78 CO49 HD11 CA51) conv=27,5% BRL=61k
-- Blanche IWS: 155 (PE70 CO38 HD28 CA19) conv=29,9%
-- Gisele IWS: 138 (PE73 CO26 HD23 CA16) conv=22,6%
-- Temu Brazil: 13 (PE10 CO0) conv=0%
+// ── Copilot Agent ──
+const SYS=`Você é o Fraud Intelligence Copilot da EBANX — analista sênior especializado em boleto Brasil.
+
+Responda perguntas em linguagem natural como se fosse um analista experiente.
+Seja direto, objetivo e sempre oriente para uma ação concreta.
+
+BASE DE DADOS — D-1 (05/07/2026):
+PE total: 806 | R$ 104.965
+Vencimentos: 07/07=35 boletos (R$4.552) | 08/07=771 boletos (R$100.413)
+Status D-1: PE=806 HD=73 CA=3 CO=0
+
+PE por merchant (D-1 vs D-2):
+- Alipay: 544 (prev=551, −1,3%) R$79.507
+- Kwai APMs: 123 (prev=124, −0,8%) R$3.506 — CRITICAL
+- Temu.com: 28 (prev=29, −3,4%) R$3.358 — CRITICAL conv
+- CamelPay: 27 (prev=57, −52,6%) R$6.953 — histórico fraude
+- Wish: 22 (prev=6, +266,7%) R$3.550 — HIGH
+- Gisele IWS: 18 (prev=10, +80%) R$920
+- TikTok Live: 16 (prev=20, −20%) R$1.477
+- Blanche IWS: 14 (prev=10, +40%) R$605
+- TradeInn: 14 (prev=6, +133,3%) R$5.090 — HIGH
+
+PERÍODO COMPLETO (22/06–05/07):
+Total: 21.036 | BRL 2.573.772 | conv 34,5%
+Status: PE=7563 CO=5383 HD=5031 CA=3059
+HD = Hold: boleto bloqueado pelo antifraude antes de ser gerado
+
+Conversão por merchant: Alipay 39%, Kwai 12,9%, Wish 18,2%, CamelPay 26,2%,
+Temu.com 11,5%, TikTok 29,3%, TradeInn 27,5%, Blanche 29,9%, Gisele 22,6%, Temu Brazil 0%
 
 CPFs críticos:
-- 86345761087: 738tx 100%HD 678nomes Alipay BRL=0 → CRITICAL fraude identidade
-- 10753802600: 195tx 96%HD 2nomes Alipay BRL=619
-- 247493970: 190tx 29%HD 1nome CamelPay BRL=26295
-- 398992177: 150tx 80%HD 10nomes Alipay+Wish BRL=904
-- 339122641: 77tx 87%PE 1nome Kwai BRL=17191
+- 86345761087: 738tx 100%HD 678nomes Alipay R$0 → CRITICAL fraude identidade
+- 10753802600: 195tx 96%HD 2nomes Alipay R$619
+- 247493970: 190tx 29%HD 1nome CamelPay R$26.295
+- 398992177: 150tx 80%HD 10nomes Alipay+Wish R$904
+- 339122641: 77tx 87%PE 1nome Kwai R$17.191
+- 452872868: 71tx 61%HD 5nomes Alipay+Wish R$1.135
 
 BP-DR: 18=3021, 602=1755, 40=97, 600=79, 113=55, 23=20
+Anomalia: 04/07 CO=24, 05/07 CO=0 (média outros dias ~450)
 
 Volume diário últimos 7 dias:
-29/06: PE702 CO411 HD536 CA4
-30/06: PE810 CO582 HD414 CA2
-01/07: PE960 CO582 HD391 CA9
-02/07: PE827 CO536 HD246 CA0
-03/07: PE878 CO386 HD662 CA2
-04/07: PE813 CO24 HD354 CA1 ← ANOMALIA
-05/07: PE806 CO0 HD73 CA3 ← ANOMALIA CO=0
+29/06: PE702 CO411 HD536
+30/06: PE810 CO582 HD414
+01/07: PE960 CO582 HD391
+02/07: PE827 CO536 HD246
+03/07: PE878 CO386 HD662
+04/07: PE813 CO24 HD354 ← anomalia
+05/07: PE806 CO0 HD73 ← anomalia CO=0
 
-Seniority: Antigo=16971(81%) Novo=4065(19%)
-Limitações: bank_info, score_resp, triggered_rules, provider, customer_ip vazios.
+Seniority: Antigo 81% (16.971) | Novo 19% (4.065)
+Limitações: bank_info, score, triggered_rules, provider vazios nesta base.
 
-Responda de forma objetiva, técnica e acionável. Nunca invente dados fora da base acima.`;
+INSTRUÇÕES: Responda como analista, em português, de forma objetiva e acionável.
+Nunca invente dados fora da base acima. Formato: direto, sem markdown excessivo.`;
 
 const msgs=[];
-const chatEl=document.getElementById('agent-msgs');
-
-function addMsg(role,text,loading=false){
+const chat=document.getElementById('agent-msgs');
+function addMsg(r,t,l=false){
   const d=document.createElement('div');
-  if(loading){d.className='msg-loading';d.id='loading-msg';d.innerHTML='Analisando <span class="dot-anim"><span>.</span><span>.</span><span>.</span></span>';}
-  else{d.className=role==='user'?'msg-user':'msg-agent';d.innerHTML=text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');}
-  chatEl.appendChild(d);
-  chatEl.scrollTop=chatEl.scrollHeight;
-  return d;
+  if(l){d.className='msg-load';d.id='lm';d.innerHTML='Analisando <span class="dots"><span>.</span><span>.</span><span>.</span></span>';}
+  else{d.className=r==='user'?'msg-u':'msg-a';d.innerHTML=t.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>');}
+  chat.appendChild(d);chat.scrollTop=chat.scrollHeight;
 }
-function removeLoading(){const e=document.getElementById('loading-msg');if(e)e.remove();}
-
-async function callAgent(q){
-  msgs.push({role:'user',content:q});
-  addMsg('assistant','',true);
+function rmLoad(){const e=document.getElementById('lm');if(e)e.remove();}
+async function callAI(q){
+  msgs.push({role:'user',content:q});addMsg('a','',true);
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SYSTEM,messages:msgs})
-    });
-    const d=await r.json();
-    removeLoading();
-    const reply=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n')||'Erro na resposta.';
-    msgs.push({role:'assistant',content:reply});
-    addMsg('assistant',reply);
-  }catch(e){removeLoading();addMsg('assistant','Erro de conexão. Tente novamente.');}
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1024,system:SYS,messages:msgs})});
+    const d=await r.json();rmLoad();
+    const rep=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n')||'Erro na resposta.';
+    msgs.push({role:'assistant',content:rep});addMsg('a',rep);
+  }catch{rmLoad();addMsg('a','Erro de conexão. Tente novamente.');}
 }
-function sendMsg(){
-  const inp=document.getElementById('agent-input');
-  const t=inp.value.trim();if(!t)return;
-  inp.value='';addMsg('user',t);callAgent(t);
-}
-function sq(q){
-  const short=q.length>90?q.substring(0,87)+'…':q;
-  addMsg('user',short);callAgent(q);
-}
+function sendMsg(){const i=document.getElementById('ai-inp');const t=i.value.trim();if(!t)return;i.value='';addMsg('user',t);callAI(t);}
+function sq(q){addMsg('user',q.length>85?q.slice(0,82)+'…':q);callAI(q);}
 </script>
 </body>
 </html>
