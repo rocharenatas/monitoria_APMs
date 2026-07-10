@@ -399,10 +399,11 @@ async function callAI(q){
   const langInstruction=currentLang==='en'?'Respond in English.':currentLang==='es'?'Responde en español.':'Responda em português.';
   msgs.push({role:'user',content:q});addMsg('a','',true);
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1024,system:SYS+'\n\n'+langInstruction,messages:msgs})});
+    const url='https://script.google.com/a/macros/ebanx.com/s/AKfycbyvONfTq9OvaKC__yrOdJsQgGSxW7Xq9ziExrbJHn-nGfATfgWEaKRCGzen8lhiX3J32g/exec';
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:SYS+'\n\n'+langInstruction,messages:msgs})});
     const d=await r.json();rmLoad();
-    const rep=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n')||'Erro.';
+    const rep=d.reply||d.text||d.content||'Erro.';
     msgs.push({role:'assistant',content:rep});addMsg('a',rep);
   }catch{rmLoad();addMsg('a','Erro de conexão. Tente novamente.');}
 }
